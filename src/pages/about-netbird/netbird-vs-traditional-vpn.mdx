@@ -1,67 +1,47 @@
+export const description = 'Как NetBird сравнивается с традиционными централизованными VPN и почему использует WireGuard для создания быстрых и защищённых peer-to-peer сетей.'
 
-export const description = 'How NetBird compares to traditional centralized VPNs, and why it builds on WireGuard to create fast, secure peer-to-peer networks.'
+# NetBird и традиционный VPN
 
-# NetBird vs. Traditional VPN
+## Проблемы традиционных VPN
 
-## Traditional VPN challenges
-In the traditional VPN model, everything converges on a centralized, protected network where all the clients are connecting to a central VPN server.
+В традиционной модели VPN всё сходится в централизованной защищённой сети, где все клиенты подключаются к центральному VPN-серверу.
 
-An increasing amount of connections can easily overload the VPN server.
-Even a short downtime of a server can cause expensive system disruptions, and a remote team's inability to work.
+Растущее количество подключений легко может перегрузить VPN-сервер. Даже короткий простой сервера способен привести к серьёзным перебоям в работе системы и невозможности удалённой команды работать.
 
-Centralized VPNs imply all the traffic going through the central server causing network delays and increased traffic usage.
+Централизованные VPN направляют весь трафик через центральный сервер, что приводит к задержкам в сети и увеличению потребления трафика.
 
-Such systems require an experienced team to set up and maintain.
-Configuring firewalls, setting up NATs, SSO integration, and managing access control lists can be a nightmare.
+Такие системы требуют опытной команды для настройки и обслуживания. Конфигурация брандмауэров, NAT, интеграция SSO и управление списками контроля доступа могут быть весьма сложными.
 
-Traditional centralized VPNs are often compared to a [castle-and-moat](https://en.wikipedia.org/wiki/Moat) model
-in which once accessed, user is trusted and can access critical infrastructure and resources without any restrictions.
+Традиционные централизованные VPN часто сравнивают с моделью [«замок и ров»](https://en.wikipedia.org/wiki/Moat): после получения доступа пользователь считается доверенным и может без дополнительных ограничений обращаться к критически важной инфраструктуре и ресурсам.
 
-## NetBird benefits
+## Преимущества NetBird
 
-NetBird decentralizes networks using direct point-to-point connections, as opposed to traditional models.
-Consequently, network performance is increased since traffic flows directly between the machines bypassing VPN servers or gateways.
-To achieve this, NetBird client applications employ signalling servers to find other machines and negotiate connections.
-These are similar to the signaling servers used in [WebRTC](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling#the_signaling_server)
+NetBird децентрализует сети с помощью прямых peer-to-peer соединений вместо традиционной централизованной модели.
 
-Thanks to [NAT traversal techniques](https://en.wikipedia.org/wiki/NAT_traversal),
-outlined in the [Why WireGuard with NetBird](#why-wire-guard-with-net-bird) section below,
-NetBird installation doesn't require complex network and firewall configuration.
-It just works, minimising the maintenance effort.
+В результате производительность сети повышается: трафик идёт напрямую между машинами, минуя VPN-серверы или шлюзы. Для этого клиентские приложения NetBird используют сигнальные серверы, которые помогают находить другие машины и согласовывать соединения. Они похожи на сигнальные серверы, используемые в [WebRTC](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling#the_signaling_server).
 
-Finally, each machine or device in the NetBird network verifies incoming connections accepting only the trusted ones.
-This is ensured by WireGuard's [Crypto Routing concept](https://www.wireguard.com/#cryptokey-routing).
+Благодаря [технологиям обхода NAT](https://en.wikipedia.org/wiki/NAT_traversal), описанным ниже в разделе [Почему WireGuard с NetBird](#почему-wireguard-с-net-bird), установка NetBird не требует сложной настройки сети и брандмауэров. Всё работает автоматически, что уменьшает объём обслуживания.
 
-## Why WireGuard with NetBird
+Наконец, каждая машина или устройство в сети NetBird проверяет входящие соединения и принимает только доверенные. Это обеспечивается концепцией [Crypto Routing](https://www.wireguard.com/#cryptokey-routing) WireGuard.
 
-WireGuard is a modern and extremely fast VPN tunnel utilizing state-of-the-art [cryptography](https://www.wireguard.com/protocol/)
-and NetBird uses WireGuard to establish a secure tunnel between machines.
+## Почему WireGuard с NetBird
 
-Built with simplicity in mind, WireGuard ensures that traffic between two machines is encrypted and flowing, however, it requires a few things to be done beforehand.
+WireGuard — современный и очень быстрый VPN-туннель, использующий современные [криптографические методы](https://www.wireguard.com/protocol/), а NetBird использует WireGuard для создания защищённого туннеля между машинами.
 
-First, in order to connect, the machines have to be configured.
-On each machine, you need to generate private and public keys and prepare a WireGuard configuration file.
-The configuration also includes a private IP address that should be unique per machine.
+WireGuard создавался с упором на простоту и обеспечивает шифрование трафика между двумя машинами. Однако перед использованием необходимо выполнить несколько действий.
 
-Secondly, to accept the incoming traffic, the machines have to trust each other.
-The generated public keys have to be pre-shared on the machines.
-This works similarly to SSH with its authorised_keys file.
+Во-первых, машины нужно настроить для соединения. На каждой машине необходимо создать приватный и публичный ключи и подготовить конфигурационный файл WireGuard. Конфигурация также содержит приватный IP-адрес, уникальный для каждой машины.
 
-Lastly, the connectivity between the machines has to be ensured.
-To make machines reach one another, you are required to set a WireGuard endpoint property which indicates the IP address and port of the remote machine to connect to.
-On many occasions, machines are hidden behind firewalls and NAT devices,
-meaning that you may need to configure a port forwarding or open holes in your firewall to ensure the machines are reachable.
+Во-вторых, для приёма входящего трафика машины должны доверять друг другу. Сгенерированные публичные ключи нужно предварительно передать на соответствующие машины. Это похоже на работу файла authorized_keys в SSH.
 
-The undertakings mentioned above might not be complicated if you have just a few machines, but the complexity grows as the number of machines increases.
+Наконец, между машинами должна быть обеспечена связность. Для подключения необходимо задать endpoint WireGuard, указывающий IP-адрес и порт удалённой машины. Во многих случаях машины находятся за брандмауэрами и NAT-устройствами, поэтому может потребоваться настроить перенаправление портов или открыть порты в брандмауэре.
 
-NetBird simplifies the setup by automatically generating private and public keys, assigning unique private IP addresses, and takes care of sharing public keys between the machines.
-It is worth mentioning that the private key never leaves the machine.
-So only the machine that owns the key can decrypt traffic addressed to it.
-The same applies also to the relayed traffic mentioned below.
+Перечисленные действия могут быть несложными для нескольких машин, но сложность быстро растёт с увеличением их количества.
 
-Furthermore, NetBird ensures connectivity by leveraging advanced [NAT traversal techniques](https://en.wikipedia.org/wiki/NAT_traversal)
-and removing the necessity of port forwarding, opening holes in the firewall, and having a public static IP address.
-In cases when a direct peer-to-peer connection isn't possible, all traffic is relayed securely between peers.
-NetBird also monitors the connection health and restarts broken connections.
+NetBird упрощает настройку: автоматически создаёт приватные и публичные ключи, назначает уникальные приватные IP-адреса и распространяет публичные ключи между машинами. При этом приватный ключ никогда не покидает машину, поэтому только владеющая им машина может расшифровать адресованный ей трафик. То же относится и к ретранслируемому трафику.
 
-Check out the WireGuard [Quick Start](https://www.wireguard.com/quickstart/) guide to learn more about configuring "plain" WireGuard without NetBird.
+Кроме того, NetBird обеспечивает связность с помощью современных [технологий обхода NAT](https://en.wikipedia.org/wiki/NAT_traversal), устраняя необходимость в перенаправлении портов, открытии портов в брандмауэре и наличии публичного статического IP-адреса.
+
+Если прямое peer-to-peer соединение невозможно, весь трафик безопасно ретранслируется между peers. NetBird также отслеживает состояние соединения и перезапускает разорванные соединения.
+
+Чтобы узнать больше о настройке «чистого» WireGuard без NetBird, ознакомьтесь с руководством WireGuard [Quick Start](https://www.wireguard.com/quickstart/).

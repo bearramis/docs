@@ -1,55 +1,59 @@
 import {Note} from "@/components/mdx";
 
-# FAQ
+# Часто задаваемые вопросы
 
-## What firewall ports should I open to use NetBird?
+## Какие порты брандмауэра нужно открыть для NetBird?
 
-The NetBird client doesn't require any incoming port to be open. For the full list of outbound endpoints, ports, and example firewall rules for NetBird Cloud, see [Ports & Firewalls](/about-netbird/ports-and-firewalls#network-firewall-ports). If you self-host, see the [self-hosted port requirements](/selfhosted/selfhosted-guide#port-requirements).
+Клиенту NetBird не требуется открывать какие-либо входящие порты. Полный список исходящих конечных точек, портов и примеров правил брандмауэра для NetBird Cloud приведён на странице [Порты и брандмауэры](/about-netbird/ports-and-firewalls#network-firewall-ports). При самостоятельном размещении см. [требования к портам для self-hosted](/selfhosted/selfhosted-guide#port-requirements).
 
-## How does NetBird interact with host-based firewalls?
+## Как NetBird взаимодействует с брандмауэром хоста?
 
-NetBird automatically adds rules to allow traffic on the `wt0` interface on Windows and Linux. For platform behavior, common conflicts (UFW, firewalld, Windows Firewall, third-party security software), and remediation steps, see [Ports & Firewalls](/about-netbird/ports-and-firewalls#host-based-firewalls).
+NetBird автоматически добавляет правила, разрешающие трафик через интерфейс `wt0` в Windows и Linux. О поведении на разных платформах, распространённых конфликтах (UFW, firewalld, Windows Firewall, стороннее ПО безопасности) и способах устранения проблем см. [Порты и брандмауэры](/about-netbird/ports-and-firewalls#host-based-firewalls).
 
-## Why and what are the anonymous usage metrics?
+## Зачем нужны анонимные метрики использования?
 
-### Why did we add metrics collection?
-As an open-source project and business, making data-driven decisions is essential. By collecting anonymous metrics, we can understand our adoption rate, feature usage, and the types of client operating systems in use. We kindly ask our community users to keep metrics enabled, as this helps us assess the impact of bugs and measure the quality of our software over time.
+### Зачем мы добавили сбор метрик?
+
+Как проект с открытым исходным кодом и бизнес, мы считаем принятие решений на основе данных важным. Сбор анонимных метрик позволяет понимать темпы распространения, использование функций и типы используемых клиентских операционных систем. Мы просим пользователей нашего сообщества по возможности не отключать метрики: это помогает оценивать влияние ошибок и качество программного обеспечения с течением времени.
 
 <Note>
-The collection is strict to our management system.
+Сбор данных ограничен нашей системой управления.
 </Note>
 
-If the metric collection infringes any internal regulation or policy, it can be disabled by setting the flag `--disable-anonymous-metrics=true` to the management service startup command. the default interval is 12 hours, but it can be adjusted with the environment variable `NETBIRD_METRICS_INTERVAL_IN_SECONDS`.
+Если сбор метрик нарушает внутренние правила или требования вашей организации, его можно отключить, добавив флаг `--disable-anonymous-metrics=true` в команду запуска Management Service. Интервал по умолчанию составляет 12 часов, но его можно изменить с помощью переменной окружения `NETBIRD_METRICS_INTERVAL_IN_SECONDS`.
 
-### What are the metrics being collected?
-We are collecting the following metrics:
-* Number of accounts, users, and service users
-* Number of personal access tokens
-* Number of peers (total, SSH-enabled, login expiration enabled, user-activated)
-* Number of active peers and active users in the last collection interval
-* Number of peers per operating system (total and active)
-* Number of UI clients and their operating systems
-* Number of setup keys usage (including ephemeral peer setup keys)
-* Number of groups
-* Number of routes (including routes with routing groups)
-* Number of networks, network resources, and network routers
-* Number of access control policy rules (by protocol and direction)
-* Number of posture checks and rules with source posture checks
-* Number of reverse proxy services (total, enabled, by status, by target type, by auth type)
-* Number of service targets (by type: peer, host, domain, subnet)
-* Number of custom domains (total and validated)
-* Number of Agent Network accounts, providers, policies, and budget rules, and number of accounts with Agent Network log collection enabled
-* Agent Network usage totals (input tokens, output tokens, and cost in USD)
-* Rosenpass usage
-* IdP manager type and embedded IdP provider breakdown
-* Store engine type
-* Service uptime
-* Service version (including min/max active peer versions)
-* Metrics generation time
+### Какие метрики собираются?
 
+Мы собираем следующие метрики:
 
-### Metrics UUID
-We are using an installation ID for each management service which is generated once and stored in your management store database. It doesn't have any trace of any other private information, and it helps distinguish each deployment.
+* Количество аккаунтов, пользователей и сервисных пользователей
+* Количество персональных токенов доступа
+* Количество peers (всего, с включённым SSH, с включённым сроком действия входа, активированных пользователем)
+* Количество активных peers и активных пользователей за последний интервал сбора
+* Количество peers по операционным системам (всего и активных)
+* Количество UI-клиентов и их операционных систем
+* Использование setup keys (включая временные setup keys для peers)
+* Количество групп
+* Количество маршрутов (включая маршруты с routing groups)
+* Количество сетей, сетевых ресурсов и сетевых маршрутизаторов
+* Количество правил политик управления доступом (по протоколу и направлению)
+* Количество проверок состояния и правил с исходными проверками состояния
+* Количество сервисов reverse proxy (всего, включённых, по статусу, типу цели и типу аутентификации)
+* Количество сервисных целей (по типу: peer, host, domain, subnet)
+* Количество пользовательских доменов (всего и подтверждённых)
+* Количество аккаунтов, провайдеров, политик и бюджетных правил Agent Network, а также количество аккаунтов с включённым сбором журналов Agent Network
+* Суммарное использование Agent Network (входные токены, выходные токены и стоимость в USD)
+* Использование Rosenpass
+* Тип IdP Manager и распределение встроенных IdP-провайдеров
+* Тип движка хранилища
+* Время работы сервиса
+* Версия сервиса (включая минимальную/максимальную версии активных peers)
+* Время генерации метрик
 
-### Metrics pusher IP
-We are not storing the pusher IP address; it gets discarded once the request is complete.
+### UUID метрик
+
+Для каждого Management Service используется идентификатор установки, который создаётся один раз и хранится в базе данных Management Service. Он не содержит сведений о другой личной информации и позволяет различать отдельные развёртывания.
+
+### IP-адрес отправителя метрик
+
+IP-адрес отправителя мы не сохраняем: он отбрасывается после завершения запроса.
