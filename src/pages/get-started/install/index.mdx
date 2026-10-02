@@ -1,21 +1,21 @@
 import {Note} from "@/components/mdx";
 
-# Install NetBird
+# Установка NetBird
 
-If you're a new user you should visit the [Quickstart Guide](https://docs.netbird.io/get-started). This will help you setup your management dashboard and connect your first client. For quick install instructions, including desktop applications, visit the [install prompt](https://app.netbird.io/install) through the management dashboard. To view all the client installation methods we've set up a variety of platform specific pages.
+Если вы новый пользователь начните с the [быстрого старта](https://docs.netbird.io/get-started). This will help you setup your management dashboard and connect your first client. For quick install instructions, including desktop applications, visit the [install prompt](https://app.netbird.io/install) through the management dashboard. To view all the client installation methods we've set up a variety of platform specific pages.
 
-<Button href="https://app.netbird.io/install" arrow="right" children="Download NetBird" />
+<Button href="https://app.netbird.io/install" arrow="right" children="Скачать NetBird" />
 
 The NetBird client allows a peer to join a pre-existing NetBird deployment. If a NetBird deployment is not yet available, there are both managed and [self-hosted](https://docs.netbird.io/selfhosted/selfhosted-quickstart) options available.
 
-## Install and Update Instructions
+## Установка и обновление
 * [Install on Linux](/get-started/install/linux)
 * [Install on macOS](/get-started/install/macos)
 * [Install on Windows](/get-started/install/windows)
 * [Install on Android](/get-started/install/android)
 * [Install on iOS](/get-started/install/ios)
 
-## Additional Platforms
+## Дополнительные платформы
 * [Install on Synology](/get-started/install/synology)
 * [Install on TrueNAS](/get-started/install/truenas)
 * [Install on pfSense](/get-started/install/pfsense)
@@ -25,12 +25,12 @@ The NetBird client allows a peer to join a pre-existing NetBird deployment. If a
 * [Install on Raspberry Pi](/get-started/install/raspberrypi)
 * [Install on Proxmox VE](/get-started/install/proxmox-ve)
 
-## Running NetBird with SSO Login
-### Desktop UI Application
+## Запуск NetBird с SSO
+### Настольное приложение
 Launch the desktop app and click **Connect** in the main window or tray/menu-bar menu. On first launch, choose NetBird Cloud or enter the URL of your self-hosted deployment. NetBird opens your browser to authenticate the device. See the [desktop app guide](/client/desktop-app) for the complete interface.
 
 ### CLI
-Alternatively, you could use command line. Simply run
+Также можно использовать командную строку:
    ```bash
   netbird up
    ```
@@ -43,13 +43,13 @@ Alternatively, you could use command line. Simply run
     <img src="/docs-static/img/get-started/netbird-sso-login-cmd.gif" alt="high-level-dia" className="imagewrapper-big"/>
 </p>
 
-Check connection status:
+Проверьте состояние соединения:
 ```bash
   netbird status
 ```
 
-## Running NetBird with a Setup Key
-In case you are activating a server peer, you can use a [setup key](/manage/peers/register-machines-using-setup-keys) as described in the steps below.
+## Запуск NetBird с Setup Key
+Если вы активируете серверный peer, можно использовать [setup key](/manage/peers/register-machines-using-setup-keys) как описано ниже.
 
 > This is especially helpful when you are running multiple server instances with infrastructure-as-code tools like ansible and terraform.
 
@@ -78,12 +78,12 @@ Alternatively, if you are hosting your own Management Service provide `--managem
     You could also omit the `--setup-key` property. In this case, the tool will prompt for the key.
 </Note>
 
-2. Check connection status:
+2. Проверьте состояние соединения:
 ```bash
   netbird status
 ```
 
-3. Check your IP:
+3. Проверьте IP-адрес:
 
 On **macOS** :
 ````bash
