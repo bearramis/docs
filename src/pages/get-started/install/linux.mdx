@@ -1,18 +1,18 @@
 import {Note} from "@/components/mdx";
 
-# Linux Installation
+# Установка на Linux
 
-The NetBird client allows a peer to join a pre-existing NetBird deployment. If a NetBird deployment is not yet available, there are both managed and [self-hosted](https://docs.netbird.io/selfhosted/selfhosted-quickstart) options available.
+Клиент NetBird позволяет подключить узел к уже существующему развёртыванию NetBird. Если развёртывание NetBird ещё не создано, доступны управляемый вариант и [self-hosted(https://docs.netbird.io/selfhosted/selfhosted-quickstart) вариант с самостоятельным размещением.
 
-## Desktop App Dependencies
+## Зависимости настольного приложения
 
-The desktop app introduced in NetBird v0.75.0 renders its interface in a GTK 4 WebKit webview. The `netbird-ui` package does not declare these libraries as dependencies, so install them alongside it.
+Настольное приложение, представленное в NetBird v0.75.0, отображает интерфейс в WebKit webview на базе GTK 4. Пакет `netbird-ui` не объявляет эти библиотеки зависимостями, поэтому установите их отдельно вместе с ним.
 
 <Warning>
-The desktop app requires **GTK 4.10 or newer** and **WebKitGTK 6.0**. On older GTK 4 releases the app starts but crashes as soon as it opens a file dialog, so install the `netbird` CLI only on those systems.
+Для настольного приложения требуются **GTK 4.10 или новее** и **WebKitGTK 6.0**. На более старых версиях GTK 4 приложение запускается, но завершается с ошибкой при открытии диалога выбора файла, поэтому в таких системах устанавливайте только CLI `netbird`.
 </Warning>
 
-Minimum releases that satisfy both requirements:
+Минимальные версии, удовлетворяющие обоим требованиям:
 
 | Distribution | Desktop app | CLI |
 | --- | --- | --- |
@@ -22,7 +22,7 @@ Minimum releases that satisfy both requirements:
 | RHEL / AlmaLinux / Rocky | 10 and newer, with [EPEL](https://docs.fedoraproject.org/en-US/epel/getting-started/) | any supported release |
 | Amazon Linux | not available | 2 and 2023 |
 
-Ubuntu 22.04 (GTK 4.6) and Debian 12 (GTK 4.8) ship WebKitGTK 6.0 but their GTK 4 is below 4.10, so the desktop app is not supported there. RHEL 9 provides neither GTK 4.10 nor WebKitGTK 6.0.
+В Ubuntu 22.04 (GTK 4.6) и Debian 12 (GTK 4.8) есть WebKitGTK 6.0, но версия GTK 4 ниже 4.10, поэтому настольное приложение там не поддерживается. В RHEL 9 нет ни GTK 4.10, ни WebKitGTK 6.0.
 
 **Debian 13+ / Ubuntu 24.04+**
 
@@ -36,13 +36,13 @@ sudo apt-get install libgtk-4-1 libwebkitgtk-6.0-4 xdg-utils
 sudo dnf install gtk4 webkitgtk6.0 xdg-utils
 ```
 
-On other distributions, install the equivalent **GTK 4** (4.10+), **WebKitGTK 6.0**, and **xdg-utils** packages from your package manager. Many desktop systems already include some or all of them.
+В других дистрибутивах установите эквивалентные пакеты **GTK 4** (4.10+), **WebKitGTK 6.0** и **xdg-utils** через менеджер пакетов. Во многих настольных системах некоторые или все они уже установлены.
 
 <Note>
 Linux `netbird-ui` packages are built for **x86_64** only. On arm64 and other architectures, use the `netbird` CLI.
 </Note>
 
-## Linux Install Script
+## Скрипт установки Linux
 
 ```bash
 curl -fsSL https://pkgs.netbird.io/install.sh | sh
@@ -74,7 +74,7 @@ curl -fsSL https://pkgs.netbird.io/install.sh | sh
 ### RHEL 9 / Amazon Linux 2 (YUM)
 
 <Note>
-These releases do not provide GTK 4.10 or WebKitGTK 6.0, so the desktop app is not available. Install the CLI and manage NetBird with `netbird` commands.
+Эти версии не предоставляют GTK 4.10 или WebKitGTK 6.0, поэтому настольное приложение недоступно. Установите CLI и управляйте NetBird с помощью команд `netbird`.
 </Note>
 
 1. Add the repository:
@@ -128,14 +128,14 @@ On RHEL, AlmaLinux and Rocky Linux 10, `webkitgtk6.0` comes from EPEL, so enable
  sudo dnf install epel-release -y
 ```
 
-Amazon Linux 2023 does not provide GTK 4 or WebKitGTK 6.0, so install the CLI only there.
+В Amazon Linux 2023 нет GTK 4 и WebKitGTK 6.0, поэтому там устанавливайте только CLI.
 
-The tray icon uses the D-Bus StatusNotifierItem protocol. GNOME does not support it natively, so on GNOME desktops install `gnome-shell-extension-appindicator` and enable it:
+Значок в системном трее использует протокол D-Bus StatusNotifierItem. GNOME не поддерживает его нативно, поэтому в окружении GNOME установите `gnome-shell-extension-appindicator` и включите расширение:
 ```
 sudo dnf install gnome-shell-extension-appindicator
 sudo gnome-extensions enable appindicatorsupport@rgcjonas.gmail.com
 ```
-Under X11, you may need to restart GNOME Shell (Alt+F2, r, ⏎) after that. Under Wayland you need to logout and login again.
+В X11 после этого может потребоваться перезапустить GNOME Shell (Alt+F2, r, ⏎). В Wayland необходимо выйти из системы и войти снова.
 
 
 ### Fedora Silverblue (Atomic) / Universal Blue (rpm-ostree)
@@ -166,7 +166,7 @@ EOF
 systemctl enable --now netbird
 ```
 
-### Fedora Silverblue / Universal Blue / SteamOS / Immutable Distros (Homebrew)
+### Fedora Silverblue / Universal Blue / SteamOS / неизменяемые дистрибутивы (Homebrew)
 <Note>
     Requires installation of [Homebrew](https://docs.brew.sh/Homebrew-on-Linux), Universal Blue images should have Homebrew preinstalled. 
 
@@ -182,7 +182,7 @@ sudo netbird service uninstall
 brew unlink netbird
 ```
 
-NetBird will copy any existing configuration from the NetBird's default configuration paths to the new default location.
+NetBird скопирует существующую конфигурацию из стандартных путей конфигурации NetBird в новое стандартное расположение.
 
 2. Install Netbird
 ```bash
@@ -193,7 +193,7 @@ If it gives you an error saying to install Clang, you can install it with
 ```bash
 brew install llvm
 ```
-If that still doesn't work after that, try restarting your terminal to update the path.
+Если после этого всё ещё не работает, попробуйте перезапустить терминал, чтобы обновить PATH.
 </Note>
 3. Install and start the client daemon service:
 ```bash
@@ -203,7 +203,7 @@ If that still doesn't work after that, try restarting your terminal to update th
 You may need to adjust this command if you are not using the default `/home/linuxbrew/.linuxbrew` prefix for your Homebrew install.
 
 <Note>
-On Fedora-based systems including Universal Blue, SELinux may block NetBird from running due to homebrew installing it in ~/linuxbrew.
+В системах на базе Fedora, включая Universal Blue, SELinux может блокировать запуск NetBird, поскольку Homebrew устанавливает его в `~/linuxbrew`.
 
 You can fix this by running
 ```bash
@@ -213,7 +213,7 @@ sudo restorecon -Rv /home/linuxbrew/.linuxbrew/Cellar/netbird
 sudo systemctl restart netbird
 ```
 
-If your Homebrew prefix is set to something other than /home/linuxbrew/.linuxbrew, you may need to adjust those commands to match.
+Если префикс Homebrew отличается от `/home/linuxbrew/.linuxbrew`, скорректируйте команды в соответствии с вашим расположением.
 
 You can verify that the NetBird service is running properly before and after making these changes by running:
 ```bash
@@ -221,7 +221,7 @@ sudo systemctl status netbird
 ```
 </Note>
 
-### Fedora Silverblue / Universal Blue / SteamOS / Immutable Distros (Distrobox)
+### Fedora Silverblue / Universal Blue / SteamOS / неизменяемые дистрибутивы (Distrobox)
 <Note>
     Requires installation of [Distrobox](https://distrobox.it/), Universal Blue images should have Distrobox preinstalled.
 </Note>
@@ -265,10 +265,10 @@ zypper in netbird
 ```
 
 <Note>
-These commands install the CLI. To use the desktop app, install `netbird-ui` together with your distribution's GTK 4.10+ and WebKitGTK 6.0 packages; openSUSE names them differently from Debian and Fedora, so check with `zypper search webkitgtk`.
+Эти команды устанавливают CLI. Для использования настольного приложения установите `netbird-ui` вместе с пакетами GTK 4.10+ и WebKitGTK 6.0 вашего дистрибутива; в openSUSE они называются иначе, чем в Debian и Fedora, поэтому проверьте их с помощью `zypper search webkitgtk`.
 </Note>
 
-### Binary Install
+### Установка из бинарного файла
 **Installation from binary (CLI only)**
 
 1. Checkout NetBird [releases](https://github.com/netbirdio/netbird/releases/latest)
@@ -304,13 +304,13 @@ After that you may need to add /usr/bin in your PATH environment variable:
   sudo netbird service start
 ```
 
-## Community packages
+## Пакеты от сообщества
 
 <Warning>
-The packages in this section are maintained by Linux distributions and other community package repositories. NetBird does not build or publish them. Available versions, architectures, service integration, and desktop app support may differ from the officially supported NetBird packages above.
+Пакеты в этом разделе поддерживаются Linux-дистрибутивами и другими репозиториями сообщества. NetBird не собирает и не публикует их. Доступные версии, архитектуры, интеграция с сервисами и поддержка настольного приложения могут отличаться от официально поддерживаемых пакетов NetBird выше.
 </Warning>
 
-Your distribution's normal update process will update NetBird when a newer package becomes available.
+При появлении новой версии пакета обычный процесс обновления вашего дистрибутива обновит NetBird.
 
 ### Alpine Linux (APK)
 
@@ -431,7 +431,7 @@ sudo eopkg install netbird-ui
 
 The desktop package depends on the `netbird` client package, so eopkg installs the client automatically if it is not already present.
 
-### Verify the service
+### Проверка сервиса
 
 After installing and starting a community package, check that the CLI can reach the daemon:
 
@@ -439,11 +439,11 @@ After installing and starting a community package, check that the CLI can reach 
 sudo netbird status
 ```
 
-Before you log in, the command should return daemon status rather than a socket or connection error. Depending on the package version, it may report `Daemon status: NeedsLogin` or show `Management: Disconnected`. Continue with one of the login methods below. On Alpine, where these instructions are run as root, omit `sudo`.
+До входа в систему команда должна возвращать состояние демона, а не ошибку сокета или подключения. В зависимости от версии пакета она может показать `Daemon status: NeedsLogin` или `Management: Disconnected`. После этого перейдите к одному из способов входа ниже. В Alpine, где эти инструкции выполняются от root, уберите `sudo`.
 
-## Updating
+## Обновление
 
-If your NetBird client was installed through a package manager, use that to update.
+Если клиент NetBird был установлен через менеджер пакетов, используйте его для обновления.
 If you used the one-command script to install, you can follow this to update:
 
 ```bash
@@ -455,57 +455,57 @@ netbird up
 ```
 
 
-## Running NetBird with SSO Login
-### Desktop UI Application
-Launch the desktop app and click **Connect** in the main window or system-tray menu. On first launch, choose NetBird Cloud or enter the URL of your self-hosted deployment. NetBird opens your browser to authenticate the device. See the [desktop app guide](/client/desktop-app) for the complete interface.
+## Запуск NetBird с входом через SSO
+### Настольное приложение
+Запустите настольное приложение и нажмите **Connect** в главном окне или меню системного трея. При первом запуске выберите NetBird Cloud или укажите URL вашего self-hosted-развёртывания. NetBird откроет браузер для аутентификации устройства. Полное описание интерфейса см. в [руководстве по настольному приложению](/client/desktop-app).
 
 ### CLI
-Alternatively, you could use command line. Simply run
+В качестве альтернативы можно использовать командную строку. Просто выполните
    ```bash
   netbird up
    ```
 
 <Note>
-    It will open your browser and prompt you for your email and password. Follow the instructions.
+    Откроется браузер, где потребуется указать адрес электронной почты и пароль. Следуйте инструкциям.
 </Note>
 
 <p>
     <img src="/docs-static/img/get-started/netbird-sso-login-cmd.gif" alt="high-level-dia" className="imagewrapper-big"/>
 </p>
 
-Check connection status:
+Проверьте состояние подключения:
 ```bash
   netbird status
 ```
 
-## Running NetBird with a Setup Key
-In case you are activating a server peer, you can use a [setup key](/manage/peers/register-machines-using-setup-keys) as described in the steps below.
+## Запуск NetBird с помощью Setup Key
+Если вы активируете серверный узел, можно использовать [setup key](/manage/peers/register-machines-using-setup-keys) как описано ниже.
 
-> This is especially helpful when you are running multiple server instances with infrastructure-as-code tools like ansible and terraform.
+> Это особенно удобно при запуске нескольких серверных экземпляров с помощью инструментов infrastructure-as-code, таких как Ansible и Terraform.
 
-For unattended deployments across many machines, pre-populate the client config so each peer registers on first start. See [Bootstrap peers via config file](/manage/peers/bootstrap-via-config-file).
+Для автоматического развёртывания на множестве машин заранее заполните конфигурацию клиента, чтобы каждый узел зарегистрировался при первом запуске. См. [Bootstrap peers via config file](/manage/peers/bootstrap-via-config-file).
 
-1. Login to the Management Service. You need to have a `setup key` in hand (see [setup keys](/manage/peers/register-machines-using-setup-keys)).
+1. Войдите в Management Service. У вас должен быть `setup key` (see [setup keys](/manage/peers/register-machines-using-setup-keys)).
 
 ```bash
   netbird up --setup-key <SETUP KEY>
 ```
 
-Alternatively, if you are hosting your own Management Service provide `--management-url` property pointing to your Management Service:
+Если вы используете собственный Management Service, укажите параметр `--management-url`, указывающий на ваш Management Service:
 ```bash
   netbird up --setup-key <SETUP KEY> --management-url http://localhost:33073
 ```
 
 <Note>
-    You could also omit the `--setup-key` property. In this case, the tool will prompt for the key.
+    Параметр `--setup-key` также можно не указывать. В этом случае программа запросит ключ.
 </Note>
 
-2. Check connection status:
+2. Проверьте состояние подключения:
 ```bash
   netbird status
 ```
 
-3. Check your IP:
+3. Проверьте свой IP-адрес:
 
 ```bash
   ip addr show wt0
