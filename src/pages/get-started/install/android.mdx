@@ -1,12 +1,12 @@
 import {Note} from "@/components/mdx";
 
-# Install NetBird on an Android
+# Установка NetBird на Android
 
-The Android supports mobile devices, tablets and [Android TV](android-tv) devices running Android 8.0 or later. 
+Приложение Android поддерживает смартфоны, планшеты и устройства [Android TV](android-tv) под управлением Android 8.0 и новее. 
 
-## Where to Download
+## Где скачать
 
-NetBird has an official Android application that you can download at Google Play Store:
+У NetBird есть официальное приложение для Android, которое можно скачать в Google Play Store:
 
 <p>
     <a href="https://play.google.com/store/apps/details?id=io.netbird.client" target="_blank">
@@ -15,54 +15,54 @@ NetBird has an official Android application that you can download at Google Play
 
 </p>
 
-APK releases are also available to install directly on your Android device via the [NetBird Android GitHub repository](https://github.com/netbirdio/android-client/releases).
+APK-версии также доступны для прямой установки на Android через [репозиторий NetBird Android на GitHub](https://github.com/netbirdio/android-client/releases).
 
-## Configure Netbird on Android
+## Настройка NetBird на Android
 
-### First Launch 
+### Первый запуск 
 
-Upon first launch, NetBird will inform you that it's using the default managemet server. 
+При первом запуске NetBird сообщит, что используется сервер управления по умолчанию. 
 
 <img src="/docs-static/img/get-started/android/first-install-dialog.png" alt="firstinstall" className="imagewrapper-medium"/>
 
-Select 'Continue' to ackownledge and you'll be greeted with the app's main screen. 
+Нажмите «Continue», чтобы подтвердить это. После этого откроется главный экран приложения. 
 
 <img src="/docs-static/img/get-started/android/main-screen.png" alt="mainscreen" className="imagewrapper-medium"/>
 
-### Management Server Configuration
+### Настройка сервера управления
 
 <Note>
-    This step only applies to self-hosted users, or cloud users enrolling the device with a setup key. If you're a cloud user and are _not_ enrolling the device with a setup key, you can safely skip to [Connecting to Your Network](#connecting-to-your-network)
+    Этот шаг относится только к пользователям self-hosted или облачным пользователям, регистрирующим устройство с помощью setup key. Если вы используете облачный NetBird и _не_ регистрируете устройство с помощью setup key, этот шаг можно пропустить и перейти к разделу [Подключение к вашей сети](#connecting-to-your-network)
 </Note>
 
-Select the hamburger menu on the top left of the main screen and navigate to the 'Change Server' menu.
+Откройте меню-гамбургер в левом верхнем углу главного экрана и перейдите в меню «Change Server».
 
 <img src="/docs-static/img/get-started/android/change-server-menu-item.png" alt="changeserver" className="imagewrapper-medium"/>
 
-Changing servers erases the device's current NetBird config, so you'll need to confirm the action before proceeding:
+При смене сервера текущая конфигурация NetBird на устройстве удаляется, поэтому перед продолжением потребуется подтвердить действие:
 
 <img src="/docs-static/img/get-started/android/confirm-erase-config.png" alt="confirmeraseconfig" className="imagewrapper-medium"/>
 
-Enter your management server endpoint. For cloud users, this is `https://api.netbird.io:443`. For self-hosted users, it's usually `https://your_management_server_url:443`, but you can refer to the `exposedAddress` field in your `config.yaml` (or `management.json` for older multi-container setups) if you're unsure. 
+Введите адрес сервера управления. Для облачных пользователей это `https://api.netbird.io:443`. Для self-hosted пользователей обычно используется `https://your_management_server_url:443`, но при необходимости можно проверить поле `exposedAddress` в `config.yaml` (или `management.json` в старых многоконтейнерных конфигурациях). 
 
-If enrolling the device with a setup key, select '+ Add this device with a setup key' and enter your setup key. Select 'change' to apply your new management server config, and if successful you'll see the following:
+Если устройство регистрируется с помощью setup key, выберите «+ Add this device with a setup key» и введите setup key. Нажмите «change», чтобы применить новую конфигурацию сервера управления. При успешном изменении появится следующий экран:
 
 <img src="/docs-static/img/get-started/android/server-changed.png" alt="serverchanged" className="imagewrapper-medium"/>
 
-You're now ready to connect to your Netbird network!
+Теперь можно подключиться к вашей сети NetBird!
 
-#### Connecting to Your Network
+#### Подключение к вашей сети
 
-Select the NetBird logo button to connect. The app will request permission to create a VPN connection: 
+Нажмите кнопку с логотипом NetBird для подключения. Приложение запросит разрешение на создание VPN-подключения: 
 
 <img src="/docs-static/img/get-started/android/vpn-connection-request.png" alt="vpnconnectionrequest" className="imagewrapper-medium"/>
 
-Select 'OK'. If you didn't enter a setup key in the 'Change Server' menu, then you'll need to authenticate with your SSO provider. NetBird will open a browser window where you'll be instructed to sign in to your SSO provider.
+Нажмите «OK». Если вы не вводили setup key в меню «Change Server», потребуется пройти аутентификацию у вашего SSO-провайдера. NetBird откроет окно браузера, где потребуется войти в учётную запись SSO-провайдера.
 
-After logging in, NetBird will confirm your authentication. Once you close the browser window, your device should be connected!
+После входа NetBird подтвердит успешную аутентификацию. После закрытия окна браузера устройство должно подключиться.
 
-## What's next?
-- Configure the device's [group & policy](/manage/access-control) memberships
+## Что дальше?
+- Настройте членство устройства в [группах и политиках](/manage/access-control) memberships
 
 
 
