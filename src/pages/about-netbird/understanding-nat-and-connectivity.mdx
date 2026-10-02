@@ -1,277 +1,279 @@
 import {Note} from "@/components/mdx";
 
-export const description = 'How NAT types, hole punching, and NetBird\'s relay infrastructure determine whether peers connect directly or through a relay.';
+export const description = 'Как типы NAT, hole punching и relay-инфраструктура NetBird определяют, устанавливаются ли прямые соединения между peers или используется relay.';
 
-# Understanding NAT and Connectivity
+# Понимание NAT и сетевой связности
 
-## What is NAT?
+## Что такое NAT?
 
-Network Address Translation (NAT) is a technique used by routers and firewalls to allow multiple devices on a private network to share a single public IP address when accessing the internet. Your device has a private IP (like `192.168.1.50`), but when you connect to a website, the router translates this to its public IP address and keeps track of which internal device made the request.
+Network Address Translation (NAT) — технология, используемая маршрутизаторами и брандмауэрами, позволяющая нескольким устройствам в частной сети использовать один публичный IP-адрес при доступе в интернет. У устройства есть приватный IP-адрес (например, `192.168.1.50`), но при подключении к сайту маршрутизатор преобразует его в свой публичный IP-адрес и отслеживает, какое внутреннее устройство отправило запрос.
 
-NAT was originally designed to conserve IPv4 addresses, but it creates a challenge for peer-to-peer connections: devices behind NAT cannot directly receive incoming connections from the internet because there's no way for external traffic to know which internal device to reach.
+NAT изначально был разработан для экономии IPv4-адресов, но создаёт проблему для peer-to-peer соединений: устройства за NAT не могут напрямую принимать входящие соединения из интернета, поскольку внешнему трафику неизвестно, к какому внутреннему устройству обращаться.
 
-## NAT in Different Environments
+## NAT в разных окружениях
 
-Not all NAT is created equal. The type of NAT you're behind can impact whether NetBird can establish a direct peer-to-peer connection or needs to fall back to relay servers.
+Не все виды NAT работают одинаково. Тип NAT может влиять на то, сможет ли NetBird установить прямое peer-to-peer соединение или потребуется перейти на relay-серверы.
 
-### Easy NAT
+### Простой NAT
 
-Most home routers use what's called **Endpoint-Independent Mapping (EIM)** or "Easy NAT". When your device sends a packet to any external address, the router assigns a public IP:port combination that remains consistent regardless of the destination.
+Большинство домашних маршрутизаторов используют **Endpoint-Independent Mapping (EIM)**, или «простой NAT». Когда устройство отправляет пакет на любой внешний адрес, маршрутизатор назначает публичную пару IP:port, которая остаётся неизменной независимо от назначения.
 
-**How it works:**
-1. Your device at `192.168.1.50:12345` sends a UDP packet to Server A
-2. Your router maps this to `203.0.113.10:54321`
-3. When your device sends another packet to Server B, the router uses the *same* public mapping `203.0.113.10:54321`
-4. Any server that knows this mapping can send packets back to your device
+**Как это работает:**
+1. Устройство `192.168.1.50:12345` отправляет UDP-пакет на сервер A
+2. Маршрутизатор преобразует его в `203.0.113.10:54321`
+3. Когда устройство отправляет другой пакет на сервер B, маршрутизатор использует ту же публичную привязку `203.0.113.10:54321`
+4. Любой сервер, знающий эту привязку, может отправить пакет обратно устройству
 
-**Why P2P usually works:** Because the mapping is consistent, a STUN server can discover your public IP:port, share it with a peer, and that peer can send packets directly to you. The router sees return traffic and allows it through because it matches an existing mapping.
+**Почему P2P обычно работает:** поскольку привязка постоянна, STUN-сервер может определить публичный IP:port, передать его peer, а peer сможет отправить пакеты напрямую. Маршрутизатор пропустит ответный трафик, поскольку он соответствует существующей привязке.
 
 ```
 ┌─────────────────┐     ┌──────────────┐     ┌─────────────────┐
-│  Your Device    │────▶│  Home Router │────▶│    Internet     │
-│ 192.168.1.50    │     │  (Easy NAT)  │     │                 │
-│    :12345       │     │ 203.0.113.10 │     │                 │
+│  Ваше устройство│────▶│ Домашний     │────▶│    Интернет     │
+│ 192.168.1.50    │     │ маршрутизатор│     │                 │
+│    :12345       │     │  (Easy NAT)  │     │                 │
+│                 │     │ 203.0.113.10 │     │                 │
 └─────────────────┘     │    :54321    │     └─────────────────┘
                         └──────────────┘
                               │
-                    Same port for all destinations
+                    Один порт для всех назначений
 ```
 
-### Restrictive NAT
+### Ограничительный NAT
 
-Many enterprise firewalls and some ISP-grade routers use **Endpoint-Dependent Mapping (EDM)** or "Symmetric NAT". Here, the public IP:port mapping changes based on the destination.
+Многие корпоративные брандмауэры и некоторые маршрутизаторы уровня ISP используют **Endpoint-Dependent Mapping (EDM)**, или «симметричный NAT». Здесь публичная привязка IP:port меняется в зависимости от назначения.
 
-**How it works:**
-1. Your device at `10.0.5.100:12345` sends a UDP packet to Server A
-2. The firewall maps this to `198.51.100.5:60001`
-3. When your device sends a packet to Server B, the firewall assigns a *different* mapping `198.51.100.5:60002`
-4. Packets from Server B cannot use the Server A mapping
+**Как это работает:**
+1. Устройство `10.0.5.100:12345` отправляет UDP-пакет на сервер A
+2. Брандмауэр преобразует его в `198.51.100.5:60001`
+3. Когда устройство отправляет пакет на сервер B, брандмауэр назначает другую привязку `198.51.100.5:60002`
+4. Пакеты от сервера B не могут использовать привязку сервера A
 
-**Why P2P is harder:** When a STUN server discovers your public IP:port, that mapping is only valid for traffic to/from the STUN server itself. When your peer tries to send packets to that address, the firewall may reject them or map them differently.
+**Почему P2P сложнее:** когда STUN-сервер определяет ваш публичный IP:port, эта привязка действительна только для трафика к самому STUN-серверу. Когда peer пытается отправить пакеты на этот адрес, брандмауэр может отклонить их или создать другую привязку.
 
 ```
 ┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│  Your Device    │────▶│ Corporate        │────▶│    Internet     │
-│  10.0.5.100     │     │ Firewall         │     │                 │
+│  Ваше устройство│────▶│ Корпоративный    │────▶│    Интернет     │
+│  10.0.5.100     │     │ брандмауэр       │     │                 │
 │    :12345       │     │ (Symmetric NAT)  │     │                 │
 └─────────────────┘     │ 198.51.100.5     │     └─────────────────┘
-                        │   :60001 → Srv A │
-                        │   :60002 → Srv B │ Different port per destination
+                        │ :60001 → Сервер A│
+                        │ :60002 → Сервер B│ Другой порт для каждого назначения
                         └──────────────────┘
 ```
 
-**Additional restrictions:** Restrictive NAT firewalls often:
-- Block UDP entirely or limit it to specific ports
-- Require traffic to flow through HTTP/HTTPS proxies
-- Perform deep packet inspection that interferes with tunneling protocols
-- Have strict egress rules that only allow traffic to known destinations
+**Дополнительные ограничения:** ограничительные NAT-брандмауэры часто:
+- полностью блокируют UDP или ограничивают его определёнными портами;
+- требуют пропускать трафик через HTTP/HTTPS-прокси;
+- выполняют глубокий анализ пакетов, мешающий работе протоколов туннелирования;
+- имеют строгие правила исходящего трафика, разрешающие подключения только к известным назначениям.
 
 ### Carrier-Grade NAT
 
-Mobile carriers typically use **Carrier-Grade NAT (CGNAT)**, which adds an extra layer of NAT between you and the internet. Your phone is behind NAT on the carrier's internal network, and that network is behind another NAT facing the internet.
+Мобильные операторы обычно используют **Carrier-Grade NAT (CGNAT)**, добавляя дополнительный уровень NAT между вами и интернетом. Телефон находится за NAT во внутренней сети оператора, а эта сеть, в свою очередь, находится за ещё одним NAT, обращённым в интернет.
 
-**The double-NAT problem:**
+**Проблема двойного NAT:**
 ```
 ┌─────────────┐     ┌───────────────┐     ┌───────────────┐     ┌──────────┐
-│  Phone      │────▶│  Cell Tower   │────▶│  Carrier NAT  │────▶│ Internet │
-│ 10.x.x.x    │     │   (NAT 1)     │     │   (NAT 2)     │     │          │
-└─────────────┘     └───────────────┘     └───────────────┘     └──────────┘
-                           │                      │
-                    Private IP              Public IP
-                    100.64.x.x             (Shared by many users)
+│  Телефон    │────▶│  Базовая      │────▶│  Carrier NAT  │────▶│ Интернет │
+│ 10.x.x.x    │     │  станция      │     │   (NAT 2)     │     │          │
+└─────────────┘     │   (NAT 1)     │     └───────────────┘     └──────────┘
+                    └───────────────┘           │
+                           │                    │
+                    Приватный IP          Публичный IP
+                    100.64.x.x             (общий для многих пользователей)
 ```
 
-**Challenges for P2P:**
-- Two layers of NAT translation to traverse
-- Carriers often use symmetric NAT at the CGNAT layer
-- Public IP addresses are shared among thousands of users
-- Mappings may have short timeouts (30-60 seconds)
-- Network conditions change frequently as you move between towers
+**Проблемы для P2P:**
+- необходимо пройти через два уровня NAT;
+- операторы часто используют симметричный NAT на уровне CGNAT;
+- публичные IP-адреса разделяются тысячами пользователей;
+- у привязок могут быть короткие тайм-ауты (30–60 секунд);
+- сетевые условия часто меняются при перемещении между базовыми станциями.
 
 <Note>
-The `100.64.0.0/10` range you see in mobile networks is reserved for Carrier-Grade NAT. NetBird also uses this range for its internal addressing, which is intentional to avoid conflicts with typical private network ranges.
+Диапазон `100.64.0.0/10`, который встречается в мобильных сетях, зарезервирован для Carrier-Grade NAT. NetBird также использует этот диапазон для внутренней адресации — это сделано намеренно, чтобы избежать конфликтов с типичными приватными диапазонами.
 </Note>
 
-### 1:1 NAT
+### NAT 1:1
 
-Cloud VMs and data center servers present a different scenario:
+Облачные виртуальные машины и серверы в дата-центрах представляют другой сценарий.
 
-**Public cloud (AWS, GCP, Azure):**
-- VMs often have private IPs with 1:1 NAT to a public IP (Elastic IP, etc.)
-- This behaves like easy NAT for outbound connections
-- Security groups control inbound access but don't affect NAT behavior
-- P2P generally works well and usually doesn't require any firewall updates
+**Публичное облако (AWS, GCP, Azure):**
+- виртуальные машины часто имеют приватные IP с NAT 1:1 на публичный IP (Elastic IP и т. п.);
+- для исходящих соединений это ведёт себя как простой NAT;
+- группы безопасности управляют входящим доступом, но не влияют на поведение NAT;
+- P2P обычно работает хорошо и, как правило, не требует изменения правил брандмауэра.
 
-**Private/On-premises data centers:**
-- May have no NAT at all (flat network with public or routed IPs)
-- Or may be behind enterprise-grade firewalls with restrictive NAT
-- Often have strict egress policies
+**Приватные/on-premises дата-центры:**
+- NAT может отсутствовать (плоская сеть с публичными или маршрутизируемыми IP);
+- либо сеть может находиться за корпоративными брандмауэрами с ограничительным NAT;
+- часто действуют строгие правила исходящего трафика.
 
 ## NetBird Relay
 
-When direct peer-to-peer connections aren't possible (usually due to NAT difficulties), NetBird uses relay servers to ensure connectivity. NetBird includes a custom-built relay system optimized specifically for its use case.
+Когда прямые peer-to-peer соединения невозможны (обычно из-за особенностей NAT), NetBird использует relay-серверы для обеспечения связности. NetBird включает собственную систему relay, оптимизированную для этого сценария.
 
-### How the Relay Works
+### Как работает Relay
 
-The NetBird relay is a lightweight server that forwards encrypted WireGuard traffic between peers when they cannot connect directly. Unlike traditional TURN servers, NetBird's relay uses a custom protocol designed for efficiency.
+NetBird relay — лёгкий сервер, который пересылает зашифрованный трафик WireGuard между peers, когда они не могут соединиться напрямую. В отличие от традиционных TURN-серверов, relay NetBird использует собственный протокол, разработанный для эффективной передачи данных.
 
-**Transport protocols:**
-- **QUIC**: A modern UDP-based protocol with built-in encryption. This is the primary transport and offers lower latency.
-- **WebSocket**: An HTTP-based protocol that works over TCP. This serves as a fallback when UDP is blocked, as it appears as standard HTTPS traffic to firewalls.
+**Транспортные протоколы:**
+- **QUIC** — современный протокол на базе UDP со встроенным шифрованием. Это основной транспорт с меньшей задержкой.
+- **WebSocket** — протокол на базе HTTP, работающий поверх TCP. Он используется как резервный вариант, когда UDP заблокирован, поскольку для брандмауэров выглядит как обычный HTTPS-трафик.
 
-When a client connects to a relay server, it races both protocols simultaneously and uses whichever succeeds first. If QUIC (UDP) fails due to network restrictions, WebSocket (TCP) automatically takes over.
+При подключении клиента к relay-серверу оба протокола запускаются одновременно, и используется тот, который успешно подключится первым. Если QUIC (UDP) не работает из-за сетевых ограничений, WebSocket (TCP) автоматически становится резервным вариантом.
 
-### Relay Selection
+### Выбор Relay
 
-When two peers need to communicate through a relay:
+Когда два peer должны обмениваться данными через relay:
 
-1. Both peers receive relay server information from the NetBird Management service
-2. The Signal service helps peers negotiate which relay server to use
-3. Both peers connect to the agreed-upon relay server
-4. Traffic flows through the relay while remaining end-to-end encrypted
+1. Оба peer получают сведения о relay-серверах от NetBird Management Service
+2. Signal помогает peers согласовать relay-сервер
+3. Оба peer подключаются к выбранному relay-серверу
+4. Трафик проходит через relay, оставаясь зашифрованным end-to-end
 
-NetBird supports multiple relay server instances for high availability. If a relay server becomes unavailable, peers can switch to an alternative.
+NetBird поддерживает несколько экземпляров relay-серверов для высокой доступности. Если relay-сервер становится недоступен, peers могут переключиться на другой.
 
 <Note>
-Self-hosted deployments can run their own relay servers. For best performance, deploy relay servers geographically close to your users.
+В self-hosted развёртываниях можно запускать собственные relay-серверы. Для лучшей производительности размещайте relay-серверы географически близко к пользователям.
 </Note>
 
-## P2P vs. Relayed Connections
+## P2P и ретранслируемые соединения
 
-### P2P (Peer-to-Peer) Connections
+### P2P (Peer-to-Peer) соединения
 
-When NetBird establishes a P2P connection, traffic flows directly between peers with no intermediate servers:
+Когда NetBird устанавливает P2P-соединение, трафик идёт напрямую между peers без промежуточных серверов:
 
 ```
 ┌──────────────┐                                    ┌──────────────┐
-│    Peer A    │◀──────── Encrypted WireGuard ────▶│    Peer B    │
-│  (Your PC)   │               Tunnel               │  (Server)    │
+│    Peer A    │◀──────── Зашифрованный WireGuard ─▶│    Peer B    │
+│  (Ваш ПК)    │               туннель               │  (Сервер)   │
 └──────────────┘                                    └──────────────┘
 ```
 
-**Advantages:**
-- **Lower latency**: Packets take the shortest network path
-- **Higher throughput**: No relay server bottleneck
-- **Better reliability**: Fewer points of failure
-- **Privacy**: Traffic doesn't pass through any third-party infrastructure
+**Преимущества:**
+- **Меньшая задержка:** пакеты проходят по кратчайшему сетевому пути;
+- **Более высокая пропускная способность:** отсутствует ограничение relay-сервера;
+- **Лучшая надёжность:** меньше потенциальных точек отказа;
+- **Приватность:** трафик не проходит через стороннюю инфраструктуру.
 
-**Requirements:**
-- At least one peer must have "friendly" NAT or a public IP
-- UDP traffic must be allowed by intermediate firewalls
-- NAT mappings must be stable long enough for hole punching
+**Требования:**
+- хотя бы один peer должен иметь «дружественный» NAT или публичный IP;
+- промежуточные брандмауэры должны разрешать UDP;
+- привязки NAT должны оставаться стабильными достаточно долго для hole punching.
 
-### Relayed Connections
+### Ретранслируемые соединения
 
-When P2P fails, NetBird falls back to relay servers. Traffic is encrypted before leaving your device and remains encrypted through the relay:
+Когда P2P не удаётся установить, NetBird переходит на relay-серверы. Трафик шифруется до выхода с устройства и остаётся зашифрованным во время прохождения через relay:
 
 ```
 ┌──────────────┐         ┌───────────────┐         ┌──────────────┐
 │    Peer A    │◀───────▶│ Relay Server  │◀───────▶│    Peer B    │
-│  (Your PC)   │         │  (NetBird)    │         │  (Server)    │
+│  (Ваш ПК)    │         │  (NetBird)    │         │  (Сервер)   │
 └──────────────┘         └───────────────┘         └──────────────┘
                                 │
-                 Traffic is still WireGuard
-                 encrypted end-to-end
+                 Трафик по-прежнему зашифрован
+                 WireGuard end-to-end
 ```
 
-**When relayed connections occur:**
-- Both peers are behind symmetric NAT
-- UDP is blocked but WebSocket over TCP is allowed
-- Aggressive firewalls with deep packet inspection
-- Extremely restrictive corporate networks
+**Когда используются ретранслируемые соединения:**
+- оба peers находятся за симметричным NAT;
+- UDP заблокирован, но разрешён WebSocket через TCP;
+- используются агрессивные брандмауэры с глубоким анализом пакетов;
+- сеть организации имеет очень строгие ограничения.
 
-**Trade-offs:**
-- **Higher latency**: Traffic must travel to and from the relay server
-- **Lower throughput**: Relay server capacity is shared among users
-- **Geographic dependency**: Latency depends on relay server location
+**Компромиссы:**
+- **Большая задержка:** трафик должен пройти до relay-сервера и обратно;
+- **Меньшая пропускная способность:** пропускная способность relay-сервера разделяется между пользователями;
+- **Зависимость от географии:** задержка зависит от расположения relay-сервера.
 
 <Note>
-Even when traffic is relayed, it remains end-to-end encrypted with WireGuard. The relay server cannot decrypt or inspect your traffic - it only forwards encrypted packets between peers.
+Даже при использовании relay трафик остаётся зашифрован end-to-end с помощью WireGuard. Relay-сервер не может расшифровать или просмотреть трафик — он только пересылает зашифрованные пакеты между peers.
 </Note>
 
-To check which type a specific connection is using on your own machines — and to troubleshoot a relayed one step by step — see [Troubleshooting relayed connections](/help/troubleshooting-relayed-connections).
+Чтобы проверить тип соединения на своих машинах и пошагово диагностировать ретранслируемое соединение, см. [Диагностику ретранслируемых соединений](/help/troubleshooting-relayed-connections).
 
-## How NetBird Establishes Connections
+## Как NetBird устанавливает соединения
 
-NetBird uses the ICE (Interactive Connectivity Establishment) protocol to find the best possible connection path between two peers. ICE is the same technology that powers WebRTC video calls.
+NetBird использует протокол ICE (Interactive Connectivity Establishment), чтобы найти лучший возможный путь соединения между двумя peers. Это та же технология, которая используется в видеозвонках WebRTC.
 
-### The Connection Process
+### Процесс установления соединения
 
-When two NetBird peers need to connect:
+Когда два peer NetBird должны соединиться:
 
-**1. Candidate Gathering**
+**1. Сбор кандидатов**
 
-Each peer discovers all possible ways it can be reached:
+Каждый peer определяет все возможные способы, которыми к нему можно подключиться:
 
-- **Host candidates**: Local IP addresses on the machine (e.g., `192.168.1.50:51820`). These are gathered by enumerating all network interfaces on the device.
-- **Server reflexive candidates**: Public IP:port as seen from outside the NAT (e.g., `203.0.113.10:54321`). These are discovered by sending a STUN binding request to a STUN server, which responds with the public IP and port it observed.
-- **Relay candidates**: Addresses allocated by TURN/relay servers (fallback option). These are obtained by requesting an allocation from a TURN server, which reserves a port on the relay that can forward traffic to the peer.
+- **Host candidates:** локальные IP-адреса машины (например, `192.168.1.50:51820`). Они собираются путём перечисления всех сетевых интерфейсов устройства.
+- **Server reflexive candidates:** публичные IP:port, видимые снаружи NAT (например, `203.0.113.10:54321`). Они определяются отправкой STUN binding request на STUN-сервер, который возвращает наблюдаемые им публичные IP и порт.
+- **Relay candidates:** адреса, выделенные TURN/relay-серверами (резервный вариант). Они получаются запросом allocation к TURN-серверу, который резервирует порт на relay и может пересылать через него трафик к peer.
 
-**2. Candidate Exchange**
+**2. Обмен кандидатами**
 
-Peers exchange their discovered candidates through the NetBird Signal service. This exchange is encrypted end-to-end, so the Signal service cannot see the actual candidate information.
+Peers обмениваются найденными кандидатами через NetBird Signal Service. Этот обмен зашифрован end-to-end, поэтому Signal Service не может видеть фактическую информацию о кандидатах.
 
-**3. Connectivity Checks**
+**3. Проверка связности**
 
-Both peers simultaneously attempt to reach each other using all candidate pairs. ICE performs these checks in priority order, preferring direct connections over relayed ones:
+Оба peer одновременно пытаются связаться друг с другом, используя все пары кандидатов. ICE выполняет проверки в порядке приоритета, предпочитая прямые соединения ретранслируемым:
 
 ```
-Priority 1: Host ↔ Host         (direct LAN connection)
-Priority 2: Host ↔ Server Reflexive  (direct through NAT)
-Priority 3: Server Reflexive ↔ Server Reflexive (both behind NAT)
-Priority 4: Relay ↔ Any         (fallback via relay server)
+Приоритет 1: Host ↔ Host                 (прямое соединение в LAN)
+Приоритет 2: Host ↔ Server Reflexive     (прямое соединение через NAT)
+Приоритет 3: Server Reflexive ↔ Server Reflexive (оба за NAT)
+Приоритет 4: Relay ↔ Any                 (резерв через relay-сервер)
 ```
 
-**4. Connection Establishment**
+**4. Установление соединения**
 
-The first candidate pair that successfully exchanges packets becomes the active connection. NetBird then configures WireGuard to use this path for encrypted tunnel traffic.
+Первая пара кандидатов, успешно обменявшаяся пакетами, становится активным соединением. Затем NetBird настраивает WireGuard для использования этого пути передачи зашифрованного трафика туннеля.
 
-### NAT Hole Punching
+### UDP hole punching
 
-When both peers are behind NAT, NetBird uses a technique called **UDP hole punching**:
+Когда оба peer находятся за NAT, NetBird использует технику **UDP hole punching**:
 
-1. Peer A sends a UDP packet to Peer B's public address (this packet may be dropped, but it opens a hole in A's NAT)
-2. Peer B simultaneously sends a UDP packet to Peer A's public address (opening a hole in B's NAT)
-3. Because both NATs now have outbound mappings, return packets are allowed through
-4. The connection is established through both NAT holes
+1. Peer A отправляет UDP-пакет на публичный адрес Peer B (пакет может быть отброшен, но открывает отверстие в NAT для A)
+2. Peer B одновременно отправляет UDP-пакет на публичный адрес Peer A (открывая отверстие в NAT для B)
+3. Поскольку оба NAT теперь имеют исходящие привязки, ответные пакеты проходят через них
+4. Соединение устанавливается через оба NAT-отверстия
 
 ```
     Peer A                                           Peer B
       │                                                │
-      │──────── UDP to B's public addr ───────────────▶│ (may be dropped)
+      │──────── UDP to B's public addr ───────────────▶│ (может быть отброшен)
       │                                                │
-      │◀─────── UDP to A's public addr ────────────────│ (may be dropped)
+      │◀─────── UDP to A's public addr ────────────────│ (может быть отброшен)
       │                                                │
-      │         Both NATs now allow return traffic     │
+      │         Оба NAT теперь пропускают ответный трафик
       │                                                │
       │◀───────────── P2P Connection ─────────────────▶│
 ```
 
-**When hole punching fails:**
-- Symmetric NAT on either side changes port mappings, breaking the coordination
-- Firewalls with strict filtering drop unsolicited UDP
-- NAT mappings timeout before the connection is established
+**Когда hole punching не работает:**
+- симметричный NAT на одной из сторон меняет сопоставления портов, нарушая координацию;
+- брандмауэры со строгой фильтрацией отбрасывают неожиданный UDP-трафик;
+- срок действия NAT-привязок истекает до установления соединения.
 
-When hole punching fails on your network, the practical fixes — and the cases where relay is the expected outcome — are covered in [Troubleshooting relayed connections](/help/troubleshooting-relayed-connections).
+Если hole punching не работает в вашей сети, практические способы решения и случаи, когда relay является ожидаемым результатом, описаны в [Диагностике ретранслируемых соединений](/help/troubleshooting-relayed-connections).
 
-## NetBird's Relay Infrastructure
+## Relay-инфраструктура NetBird
 
-NetBird provides globally distributed relay servers to ensure minimal performance impact and connectivity even in the most restrictive networks. The relay system supports two transport protocols:
+NetBird предоставляет глобально распределённые relay-серверы, чтобы минимизировать влияние на производительность и обеспечивать связность даже в наиболее ограниченных сетях. Система relay поддерживает два транспортных протокола:
 
-- **QUIC**: High-performance UDP-based transport (primary)
-- **WebSocket**: TCP-based transport that works over port 443 (fallback when UDP is blocked)
+- **QUIC:** высокопроизводительный транспорт на базе UDP (основной);
+- **WebSocket:** транспорт на базе TCP через порт 443 (резервный при блокировке UDP).
 
-The WebSocket transport is particularly important for corporate networks that only allow HTTPS traffic, as it appears as standard web traffic to firewalls.
+WebSocket особенно важен для корпоративных сетей, разрешающих только HTTPS-трафик, поскольку для брандмауэров он выглядит как обычный веб-трафик.
 
-For legacy compatibility, NetBird also supports TURN (Coturn) servers, though the native relay is recommended for new deployments.
+Для совместимости со старыми клиентами NetBird также поддерживает TURN (Coturn), хотя для новых развёртываний рекомендуется использовать встроенный relay.
 
-## Summary
+## Кратко
 
-| NAT Type | Typical Setting | P2P Likelihood | Notes |
+| Тип NAT | Типичная среда | Вероятность P2P | Примечания |
 |-------------|-------------|----------------|-------|
-| Easy | Home | High | Usually works without configuration |
-| Restrictive | Office | Medium-Low | May need IT to whitelist endpoints |
-| Carrier Grade (Double) | Mobile networks | Low-Medium | Varies by carrier; Wi-Fi often better |
-| 1:1 NAT | Cloud VM | High | Check security group UDP rules |
+| Простой | Домашняя сеть | Высокая | Обычно работает без настройки |
+| Ограничительный | Офис | Средняя-низкая | Может потребоваться разрешить конечные точки |
+| Carrier Grade (двойной) | Мобильные сети | Низкая-средняя | Зависит от оператора; Wi-Fi часто лучше |
+| 1:1 NAT | Облачная VM | Высокая | Проверьте правила UDP группы безопасности |
 
-NetBird is designed to work in all these environments. When P2P isn't possible, the relay fallback ensures you stay connected. The connection type affects latency and throughput, but security remains the same - your traffic is always encrypted end-to-end with WireGuard.
+NetBird рассчитан на работу во всех этих окружениях. Когда P2P невозможно, резервный relay помогает сохранить соединение. Тип соединения влияет на задержку и пропускную способность, но уровень безопасности остаётся тем же: трафик всегда шифруется end-to-end с помощью WireGuard.
