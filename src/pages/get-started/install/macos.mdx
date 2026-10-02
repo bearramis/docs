@@ -1,118 +1,118 @@
 import {Note, Warning} from "@/components/mdx";
 
-# MacOS Installation
+# Установка на macOS
 
-The NetBird client allows a peer to join a pre-existing NetBird deployment. If a NetBird deployment is not yet available, there are both managed and [self-hosted](https://docs.netbird.io/selfhosted/selfhosted-quickstart) options available.
+Клиент NetBird позволяет подключить узел к уже существующему развёртыванию NetBird. Если развёртывание NetBird ещё не создано, доступны управляемый вариант и [self-hosted](https://docs.netbird.io/selfhosted/selfhosted-quickstart) вариант с самостоятельным размещением.
 
-## Install with one command
+## Установка одной командой
 
 ```bash
 curl -fsSL https://pkgs.netbird.io/install.sh | sh
 ```
 
-This installs the full NetBird application, including the desktop UI and the daemon service.
+Эта команда устанавливает полноценное приложение NetBird, включая графический интерфейс и сервис демона.
 
-### Package install
+### Установка пакета
 
-1. Download the latest MacOS release installer for your [processor](https://support.apple.com/en-us/HT211814 ):
-    - Intel: <Button href="https://pkgs.netbird.io/macos/amd64" variant="text" arrow="right">Download NetBird for Intel</Button>
-    - M1 & M2: <Button href="https://pkgs.netbird.io/macos/arm64" variant="text" arrow="right">Download NetBird for Apple Silicon</Button><br />
-_If you require an older version checkout NetBird [releases](https://github.com/netbirdio/netbird/releases/latest)_
-2. Proceed with the installation steps
-3. This will install the NetBird app into /Applications and add the daemon service
-4. After installing, you can follow the steps from [Running NetBird with SSO Login](#Running-NetBird-with-SSO-Login) steps.
+1. Скачайте установщик последней версии macOS для вашего [процессора](https://support.apple.com/en-us/HT211814 ):
+    - Intel: <Button href="https://pkgs.netbird.io/macos/amd64" variant="text" arrow="right">Скачать NetBird для Intel</Button>
+    - M1 & M2: <Button href="https://pkgs.netbird.io/macos/arm64" variant="text" arrow="right">Скачать NetBird для Apple Silicon</Button><br />
+_Если требуется более старая версия, смотрите [релизы] NetBird(https://github.com/netbirdio/netbird/releases/latest)_
+2. Выполните шаги установки
+3. Приложение NetBird будет установлено в `/Applications`, а также будет добавлен сервис демона
+4. После установки выполните шаги из раздела [Запуск NetBird с входом через SSO](#Running-NetBird-with-SSO-Login) steps.
 
 <Note>
-    To uninstall the client remove the app from /Applications
+    Чтобы удалить клиент, удалите приложение из `/Applications`
 </Note>
 
-### Homebrew install
+### Установка через Homebrew
 
-1. Download and install homebrew at https://brew.sh/
+1. Скачайте и установите Homebrew с https://brew.sh/
 2. If netbird was previously installed with homebrew, you will need to run:
 ```bash
-# Stop and uninstall daemon service:
+# Остановите и удалите сервис демона:
 sudo netbird service stop
 sudo netbird service uninstall
-# unlink the app
+# отключите приложение
 brew unlink netbird
 ```
 
 <Note>
-    netbird will copy any existing configuration from the netbird's default configuration paths to the new NetBird's default location
+    NetBird скопирует существующую конфигурацию из стандартных путей конфигурации NetBird в новое стандартное расположение
 </Note>
 
-3. Install the client
+3. Установите клиент
 ```bash
-  # for CLI only
+  # только CLI
   brew install netbirdio/tap/netbird
-  # for GUI package
+  # графический пакет
   brew install --cask netbirdio/tap/netbird-ui
 ```
-4. If you installed CLI only, you need to install and start the client daemon service:
+4. Если установлен только CLI, необходимо установить и запустить сервис демона клиента:
  ```bash
   sudo netbird service install
   sudo netbird service start
 ```
 
-### CLI-only install (binary)
+### Установка только CLI (бинарный файл)
 
-If you need only the CLI client without the desktop UI — for example, on headless servers or for MDM/fleet deployments — you can install the standalone binary directly.
+Если вам нужен только CLI-клиент без графического интерфейса — например, на серверах без GUI или для развёртывания через MDM/в парке устройств — можно напрямую установить отдельный бинарный файл.
 
-#### One-command binary install
+#### Установка бинарного файла одной командой
 
 <Warning>
-    The macOS binary tarballs from GitHub releases are **not Apple code-signed or notarized**. Only the official `.pkg` installer from [pkgs.netbird.io](https://pkgs.netbird.io) contains signed binaries. The unsigned binary will trigger Gatekeeper warnings and may be blocked by MDM policies. For managed fleet deployments, see [Building a CLI-Only .pkg for MDM Deployment](/manage/peers/mdm-deployment/macos-cli-pkg-deployment) which includes steps for signing the binary with your own Developer ID.
+    Бинарные архивы macOS из GitHub Releases **не подписаны Apple и не прошли нотариальную проверку**. Только официальный установщик `.pkg` с [pkgs.netbird.io](https://pkgs.netbird.io) содержит подписанные бинарные файлы. Неподписанный бинарный файл вызовет предупреждения Gatekeeper и может быть заблокирован политиками MDM. Для управляемого развёртывания парка устройств см. [Создание CLI-only .pkg для развёртывания через MDM](/manage/peers/mdm-deployment/macos-cli-pkg-deployment) which includes steps for signing the binary with your own Developer ID.
 </Warning>
 
-The install script supports a binary-only mode that downloads the tarball, extracts the `netbird` binary to `/usr/local/bin/`, and registers the launchd daemon:
+Скрипт установки поддерживает режим только бинарного файла: он скачивает архив, извлекает бинарный файл `netbird` в `/usr/local/bin/` и регистрирует демон launchd:
 
 ```bash
 curl -fsSL https://pkgs.netbird.io/install.sh | USE_BIN_INSTALL=true SKIP_UI_APP=true sh
 ```
 
-To update an existing binary install, add the `UPDATE_NETBIRD` flag:
+Чтобы обновить существующую бинарную установку, добавьте флаг `UPDATE_NETBIRD`:
 
 ```bash
 curl -fsSL https://pkgs.netbird.io/install.sh | USE_BIN_INSTALL=true SKIP_UI_APP=true UPDATE_NETBIRD=true sh
 ```
 
-#### Manual binary install
+#### Ручная установка бинарного файла
 
-1. Checkout NetBird [releases](https://github.com/netbirdio/netbird/releases/latest)
-2. Download the latest release for macOS:
+1. Откройте [релизы] NetBird(https://github.com/netbirdio/netbird/releases/latest)
+2. Скачайте последнюю версию для macOS:
 ```bash
-  # For Apple Silicon (M1, M2, M3, M4):
+  # Для Apple Silicon (M1, M2, M3, M4):
   curl -L -o ./netbird.tar.gz https://github.com/netbirdio/netbird/releases/download/v<VERSION>/netbird_<VERSION>_darwin_arm64.tar.gz
 
-  # For Intel:
+  # Для Intel:
   curl -L -o ./netbird.tar.gz https://github.com/netbirdio/netbird/releases/download/v<VERSION>/netbird_<VERSION>_darwin_amd64.tar.gz
 
-  # Universal binary (works on both architectures):
+  # Универсальный бинарный файл (работает на обеих архитектурах):
   curl -L -o ./netbird.tar.gz https://github.com/netbirdio/netbird/releases/download/v<VERSION>/netbird_<VERSION>_darwin_all.tar.gz
 ```
 
 <Note>
-    Replace **VERSION** with the latest released version (e.g., `0.36.5`). You can find version numbers on the [releases page](https://github.com/netbirdio/netbird/releases/latest).
+    Замените **VERSION** на номер последней выпущенной версии (e.g., `0.36.5`). Номера версий можно найти на [странице релизов](https://github.com/netbirdio/netbird/releases/latest).
 </Note>
 
-3. Extract and install the binary:
+3. Распакуйте и установите бинарный файл:
 ```bash
   tar xzf ./netbird.tar.gz
   sudo mv netbird /usr/local/bin/netbird
   sudo chown root:wheel /usr/local/bin/netbird
   sudo chmod +x /usr/local/bin/netbird
 ```
-4. Install and start the daemon service:
+4. Установите и запустите сервис демона:
 ```bash
   sudo netbird service install
   sudo netbird service start
 ```
 
-This creates a launchd daemon at `/Library/LaunchDaemons/netbird.plist` that runs as root (required for managing the WireGuard network interface).
+Это создаёт демон launchd в `/Library/LaunchDaemons/netbird.plist`, который запускается от root (это требуется для управления сетевым интерфейсом WireGuard).
 
 <Warning>
-    Automatic updates via the NetBird dashboard do **not** work for binary-only installs. The auto-updater requires the official `.pkg` installer (it checks for the `io.netbird.client` package receipt). For binary installs, you must update manually or push updates through your MDM solution. See [Building a CLI-Only .pkg for MDM Deployment](/manage/peers/mdm-deployment/macos-cli-pkg-deployment) for a managed approach.
+    Автоматические обновления через панель NetBird **не работают** для установок только из бинарного файла. Автообновление требует официальный установщик `.pkg` (it checks for the `io.netbird.client` package receipt). Для бинарных установок обновляйте клиент вручную или распространяйте обновления через вашу MDM-систему. See [Building a CLI-Only .pkg for MDM Deployment](/manage/peers/mdm-deployment/macos-cli-pkg-deployment) for a managed approach.
 </Warning>
 
 ## Running NetBird with SSO Login
